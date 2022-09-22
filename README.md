@@ -1,0 +1,1 @@
+# gh-generate-notes-sample
