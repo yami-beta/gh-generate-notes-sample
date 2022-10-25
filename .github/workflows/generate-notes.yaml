@@ -1,0 +1,29 @@
+name: generate-notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (例: 1.0.0)'
+        required: true
+
+jobs:
+  generate-notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const result = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: process.env.TAG_NAME
+            })
+            console.log(result)
+        env:
+          TAG_NAME: v${{ github.event.inputs.version }}
+
