@@ -42,15 +42,15 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.pulls.create({
+            github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `chore: ${{ fromJson(steps.gen-notes.outputs.result).name }}`,
               head: process.env.BRANCH_NAME,
               base: "main",
-              body: ${{ fromJson(steps.gen-notes.outputs.result).body }}
+              body: process.env.PR_BODY
             })
         env:
           BRANCH_NAME: version/v${{ github.event.inputs.version }}
-
+          PR_BODY: ${{ fromJson(steps.gen-notes.outputs.result).body }}
 
