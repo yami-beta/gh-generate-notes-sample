@@ -45,10 +45,10 @@ jobs:
             github.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `chore: ${{ steps.gen-notes.outputs.result.name }}`,
+              title: `chore: ${{ fromJson(steps.gen-notes.outputs.result).name }}`,
               head: process.env.BRANCH_NAME,
               base: "main",
-              body: ${{ steps.gen-notes.outputs.result.body }}
+              body: ${{ fromJson(steps.gen-notes.outputs.result).body }}
             })
         env:
           BRANCH_NAME: version/v${{ github.event.inputs.version }}
