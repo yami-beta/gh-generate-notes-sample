@@ -35,16 +35,18 @@ jobs:
           git commit -m "release: ${RELEASE_VERSION}" --allow-empty
           git push --force-with-lease origin ${BRANCH_NAME}
       - name: check exist pr
+        id: check-exist-pr
+        continue-on-error: true
         run: |
-          PR_NUMBER=$(gh pr view --json 'number' --jq '.number')
-          echo "PR_NUMBER=${PR_NUMBER}" >> "$GITHUB_ENV"
-
           LATEST_TAG=$(gh release view --json 'tagName' --jq '.tagName')
           echo "LATEST_TAG=${LATEST_TAG}" >> "$GITHUB_ENV"
+
+          PR_NUMBER=$(gh pr view --json 'number' --jq '.number')
+          echo "PR_NUMBER=${PR_NUMBER}" >> "$GITHUB_ENV"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/github-script@v6
-        if: ${{ success() }}
+        if: ${{ steps.check-exist-pr.outcome == 'success' }}
         with:
           script: |
             const result = await github.rest.repos.generateReleaseNotes({
@@ -63,7 +65,7 @@ jobs:
               body: `${result.data.body}`,
             })
       - uses: actions/github-script@v6
-        if: ${{ failure() }}
+        if: ${{ steps.check-exist-pr.outcome == 'failure' }}
         with:
           script: |
             const result = await github.rest.repos.generateReleaseNotes({
