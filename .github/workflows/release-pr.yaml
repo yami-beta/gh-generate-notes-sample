@@ -44,6 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/github-script@v6
+        if: ${{ success() }}
         with:
           script: |
             const result = await github.rest.repos.generateReleaseNotes({
@@ -58,6 +59,26 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: process.env.PR_NUMBER,
+              title: `release: ${result.data.name}`,
+              body: `${result.data.body}`,
+            })
+      - uses: actions/github-script@v6
+        if: ${{ failure() }}
+        with:
+          script: |
+            const result = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: process.env.RELEASE_VERSION,
+              target_commitish: process.env.GITHUB_REF_NAME,
+              previous_tag_name: process.env.LATEST_TAG,
+            })
+
+            github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: process.env.BRANCH_NAME,
+              base: process.env.GITHUB_REF_NAME,
               title: `release: ${result.data.name}`,
               body: `${result.data.body}`,
             })
